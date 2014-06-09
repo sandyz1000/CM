@@ -1,0 +1,72 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'gradle-one-jar'
+apply plugin: 'application'
+apply plugin : 'shadow'
+
+//Use java 7
+sourceCompatibility = '1.7'
+targetCompatibility = '1.7'
+
+mainClassName =  'com.github.stmishra.samples.service.DropwizardBootstrapSample'
+// UTF-8 should be standard by now. So use it!
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+
+jar {
+    baseName = 'dropwizard-bootstrap-sample'
+    version =  '0.1.0'
+    manifest {
+        attributes 'Main-Class': mainClassName
+    }
+}
+
+project.ext {
+    dropwizardVersion = '0.6.2'
+    sqliteJdbcVersion = '3.7.2'
+}
+
+
+buildscript {
+    repositories {
+       mavenCentral()
+       jcenter()
+
+    }
+    dependencies {
+        classpath 'com.github.rholder:gradle-one-jar:1.0.4'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:0.8'
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+
+dependencies {
+    compile('com.yammer.dropwizard:dropwizard-core:' + dropwizardVersion)
+    compile ('com.yammer.dropwizard:dropwizard-jdbi:' + dropwizardVersion)
+    compile ('com.yammer.dropwizard:dropwizard-migrations:' + dropwizardVersion)
+    compile ('org.xerial:sqlite-jdbc:' + sqliteJdbcVersion)
+    //Test jars
+    testCompile('junit:junit:4.8.2')
+}
+
+
+// Configure the run task to start the Dropwizard service
+run {
+    args 'server', './src/dist/config/dropwizard-bootstrap-config.yml'
+}
+
+task buildWebApp(type: OneJar) {
+    mainClass = mainClassName
+    archiveName = 'Webapp.jar'
+}
+
+artifacts {
+    archives buildWebApp
+}
+
+
