@@ -19,11 +19,17 @@ function (directory)
         },
 
         urlFilter: function (type) {
+            if (!app.directory)
+            {
+                app.directory = new directory();
+            }
             app.directory.filterType = type;
+            console.log("Called");
             app.directory.trigger("change:filterType");
         },
         init : function () {
             app.directory = new directory();
+            app.directory.render();
         }
 
     });

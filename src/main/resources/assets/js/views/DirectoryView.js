@@ -1,10 +1,9 @@
 define ([
 'collections/DirectoryCollection',
-'data/ContactsData',
 'views/ContactView',
 'models/ContactsModel',
  'app'
-], function (collection, contacts, contactsView, contactsModel,app) {
+], function (collection, contactsView, contactsModel,app) {
     var DirectoryView = Backbone.View.extend({
         el : "#contacts",
 
@@ -13,21 +12,21 @@ define ([
             "change #filter select" : "setFilter",
             "click #add" : "addContacts",
             "click #showForm" : "showForm"
+
         },
 
         showForm: function(){
             this.$el.find("#addContact").slideToggle();
         },
 
-
         initialize : function(){
             this.collection = new collection();
             var that = this;
             this.collection.fetch({
+                async:true,
                 success:function () {
                 $("#filter").append(that.createSelect());
             }});
-
 
             //Binding Events to the object and adding a listener to it
             this.on("change:filterType", this.filterByType, this);
@@ -91,6 +90,7 @@ define ([
             if (removed.photo === "img/placeholder.jpg") {
                 delete removed.photo;
             }
+            //Fix contacts delete
 
             $.each(contacts, function (index, contact) {
                 if (JSON.stringify(contact) === JSON.stringify(removed)) {
@@ -101,18 +101,30 @@ define ([
 
         filterByType : function(){
             if(this.filterType.toLowerCase() === "all"){
-                this.collection.reset(contacts);
+                this.collection.fetch({async:true});
                 app.router.navigate("filter/all");
+                this.render();
             }
             else {
                 var filterType = this.filterType;
-                this.collection.reset(contacts, {silent : true});
                 //Using Jquery Filtered method
-                var filtered = this.collection.models.filter(function(item){
-                    return (item.get("type").toLowerCase() === filterType.toLowerCase());
+                var filter = {type:filterType.toLowerCase()};
+                console.log(filter);
+                var that = this;
+                //Refresh the collection asynchronously
+                this.collection.fetch({async:true,
+                success:function ()
+                {
+                    var filtered = that.collection.where({type:filterType.toLowerCase()})
+                    console.log(filterType);
+                    console.log(filtered);
+                    that.collection.reset(filtered);
+                    app.router.navigate("filter/" + filterType);
+                    that.render(0);
+
+                }
                 });
-                this.collection.reset(filtered);
-                app.router.navigate("filter/" + filterType);
+
             }
         },
 

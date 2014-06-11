@@ -75,18 +75,11 @@ define (['underscore','jquery', 'backbone','models/ContactsModel'] , function (_
                 delete formData.photo;
             }
             this.model.set(formData) ;
+            var type = this.$el.find(".type").val();
+            this.model.set({type: type});
+
             this.model.save({url:'/service/contact/'+this.model.id});
-            //Update the contacts objects
-            if(prev.photo === 'img/placeholder.jpg'){
-                delete prev.photo;
-            }
-
-            $.each(contacts, function(i, contact){
-                if(JSON.stringify(prev) === JSON.stringify(contact)){
-                    contacts.splice(contacts.indexOf(contact), 1, formData);
-                }
-            });
-
+            this.model.fetch({url:'/service/contact/'+this.model.id});
             this.render();
 
         },
